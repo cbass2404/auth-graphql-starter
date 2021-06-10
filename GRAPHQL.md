@@ -715,3 +715,25 @@ module.exports = new GraphQLSchema({
     mutation,
 });
 ```
+
+### Including cookies with GraphQL/Apollo
+
+---
+
+Use the network interface prop with the ApolloClient like this:
+
+```javascript
+import ApolloClient, { createNetworkInterface } from "apollo-client";
+
+const networkInterface = createNetworkInterface({
+    uri: "/graphql",
+    opts: {
+        credentials: "same-origin",
+    },
+});
+
+const client = new ApolloClient({
+    networkInterface,
+    dataIdFromObject: (o) => o.id,
+});
+```
