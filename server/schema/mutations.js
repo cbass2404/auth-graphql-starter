@@ -1,6 +1,7 @@
 const graphql = require("graphql");
 const { GraphQLObjectType, GraphQLString } = graphql;
 const UserType = require("./types/user_type");
+const AuthService = require("../services/auth");
 
 const mutation = new GraphQLObjectType({
     name: "Mutation",
@@ -11,11 +12,13 @@ const mutation = new GraphQLObjectType({
                 email: { type: GraphQLString },
                 password: { type: GraphQLString },
             },
-            resolve(parentValue, args, request) {},
+            resolve(parentValue, { email, password }, req) {
+                return AuthService.signup({ email, password, req });
+            },
         },
     },
 });
 
 module.exports = mutation;
 
-// apollo-client react-apollo react-dom graphql
+// react-apollo react-dom graphql

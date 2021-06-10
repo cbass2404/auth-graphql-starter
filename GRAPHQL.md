@@ -587,3 +587,71 @@ this.props.mutate({
         },
     },
 ```
+
+## Authentication
+
+---
+
+Passport and graphql have to be monkey patched to get to work together nicely.
+
+-   GraphQL expects promises while passport has no built in functionality for promises, therefore you have to create promises in your passport functions to be used in GraphQL
+
+```javascript
+// Passport
+
+function signup({ email, password, req }) {
+    const user = new User({ email, password });
+    if (!email || !password) {
+        throw new Error("You must provide an email and password.");
+    }
+
+    return User.findOne({ email })
+        .then((existingUser) => {
+            if (existingUser) {
+                throw new Error("Email in use");
+            }
+            return user.save();
+        })
+        .then((user) => {
+            return new Promise((resolve, reject) => {
+                req.logIn(user, (err) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(user);
+                });
+            });
+        });
+
+    // GraphQL Mutation
+
+    const mutation = new GraphQLObjectType({
+        name: "Mutation",
+        fields: {
+            signup: {
+                type: UserType,
+                args: {
+                    email: { type: GraphQLString },
+                    password: { type: GraphQLString },
+                },
+                resolve(parentValue, { email, password }, req) {
+                    return AuthService.signup({ email, password, req });
+                },
+            },
+        },
+    });
+}
+
+// schema
+
+const graphql = require("graphql");
+const { GraphQLSchema } = graphql;
+
+const RootQueryType = require("./types/root_query_type");
+const mutation = require("./mutations");
+
+module.exports = new GraphQLSchema({
+    query: RootQueryType,
+    mutation,
+});
+```
