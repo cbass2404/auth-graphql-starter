@@ -598,6 +598,37 @@ Passport and graphql have to be monkey patched to get to work together nicely.
 
 ```javascript
 // Passport
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+    User.findById(id, (err, user) => {
+        done(err, user);
+    });
+});
+
+passport.use(
+    new LocalStrategy({ usernameField: "email" }, (email, password, done) => {
+        User.findOne({ email: email.toLowerCase() }, (err, user) => {
+            if (err) {
+                return done(err);
+            }
+            if (!user) {
+                return done(null, false, "Invalid Credentials");
+            }
+            user.comparePassword(password, (err, isMatch) => {
+                if (err) {
+                    return done(err);
+                }
+                if (isMatch) {
+                    return done(null, user);
+                }
+                return done(null, false, "Invalid credentials.");
+            });
+        });
+    })
+);
 
 function signup({ email, password, req }) {
     const user = new User({ email, password });
@@ -622,6 +653,17 @@ function signup({ email, password, req }) {
                 });
             });
         });
+    function login({ email, password, req }) {
+        return new Promise((resolve, reject) => {
+            passport.authenticate("local", (err, user) => {
+                if (!user) {
+                    reject("Invalid credentials.");
+                }
+
+                req.login(user, () => resolve(user));
+            })({ body: { email, password } });
+        });
+    }
 
     // GraphQL Mutation
 
@@ -636,6 +678,24 @@ function signup({ email, password, req }) {
                 },
                 resolve(parentValue, { email, password }, req) {
                     return AuthService.signup({ email, password, req });
+                },
+            },
+            logout: {
+                type: UserType,
+                resolve(parentValue, args, req) {
+                    const { user } = req;
+                    req.logout();
+                    return user;
+                },
+            },
+            login: {
+                type: UserType,
+                args: {
+                    email: { type: GraphQLString },
+                    password: { type: GraphQLString },
+                },
+                resolve(parentValue, { email, password }, req) {
+                    return AuthService.login({ email, password, req });
                 },
             },
         },
