@@ -18,7 +18,6 @@ class LoginForm extends Component {
                 variables: { email, password },
                 refetchQueries: [{ query }],
             })
-            .then(() => hashHistory.push("/"))
             .catch((err) => {
                 const errors = err.graphQLErrors.map((err) => err.message);
                 this.setState({ errors });
