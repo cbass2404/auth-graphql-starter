@@ -720,7 +720,7 @@ module.exports = new GraphQLSchema({
 
 ---
 
-Use the network interface prop with the ApolloClient like this:
+Use the network interface prop with the ApolloClient using createNetworkInterface from apollo-client:
 
 ```javascript
 import ApolloClient, { createNetworkInterface } from "apollo-client";
