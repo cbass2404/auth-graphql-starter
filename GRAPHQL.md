@@ -741,3 +741,21 @@ const client = new ApolloClient({
 _When chaining .thens onto a .mutate the .then happens simultaneously, not asynchronously. This will make a login loop if you chain it off a signup/login and then use a .then to redirect_
 
 _You can trick it by associating a page with a query, this automatically causes all components that are associated with it to get the new data_
+
+```javascript
+componentWillUpdate(nextProps) {
+        // this.props // current props
+        // nextProps // next set of props when the component rerenders
+        if (!this.props.data.user && nextProps.data.user) {
+            hashHistory.push("/dashboard");
+        }
+    }
+```
+
+Use a requireAuth Higher Order Component (HOC) to give security around what components are accessible if authenticated or not.
+
+Component + HOC = Enhanced Component
+
+```javascript
+
+```
