@@ -737,3 +737,7 @@ const client = new ApolloClient({
     dataIdFromObject: (o) => o.id,
 });
 ```
+
+_When chaining .thens onto a .mutate the .then happens simultaneously, not asynchronously. This will make a login loop if you chain it off a signup/login and then use a .then to redirect_
+
+_You can trick it by associating a page with a query, this automatically causes all components that are associated with it to get the new data_
